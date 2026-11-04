@@ -3,6 +3,8 @@
   <head>
     <title><%= page_title %> · <%= @profile.short_name %> — <%= @profile.title %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%# Each hover prefetch renders another Rails page in the Vercel container. %>
+    <meta name="turbo-prefetch" content="false">
     <meta name="description" content="<%= content_for(:description).presence || @profile.introduction %>">
     <meta property="og:type" content="website">
     <meta property="og:title" content="<%= page_title %> · <%= @profile.short_name %>">

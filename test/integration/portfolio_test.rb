@@ -9,6 +9,7 @@ class PortfolioTest < ActionDispatch::IntegrationTest
       assert_select "header.topbar"
       assert_select "h1", count: 1
       assert_select "meta[property='og:image']"
+      assert_select "meta[name='turbo-prefetch'][content='false']"
     end
     get root_path
     assert_select ".hero-portrait"
@@ -66,5 +67,16 @@ class PortfolioTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Disallow: /admin"
     get "/up"
     assert_response :success
+  end
+
+  test "crawler metadata does not require a profile" do
+    # These endpoints must stay available without loading site presentation data.
+    Profile.delete_all
+    ["/robots.txt", "/.well-known/security.txt", "/sitemap.xml"].each do |path|
+      get path
+      assert_response :success
+      assert_nil response.headers["Set-Cookie"]
+    end
+    assert_includes response.body, project_path(Project.published.first)
   end
 end
