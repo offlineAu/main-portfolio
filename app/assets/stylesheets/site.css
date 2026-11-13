@@ -1577,6 +1577,17 @@ body.home {
     height: 240px;
   }
 }
+/* Keep the face and name in view when a phone or tablet is turned sideways. */
+@media (max-height: 500px) and (min-width: 561px) {
+  .hero { min-height: 540px; }
+  .hero-name { font-size: clamp(56px, min(17cqw, 24svh), 140px); }
+  .hero-name-first { top: 8%; }
+  .hero-name-last { top: calc(8% + 0.8em); }
+  .hero-portrait { height: 80%; }
+  .hero-intro { bottom: 160px; }
+  .hero-cta { bottom: 100px; }
+}
+
 /* Only incidental hover effects honour the OS "reduce motion" flag. The skills marquee and the socials
    deck keep animating: Windows reports "animations off" on many low-end PCs, and those visitors should
    still get the full experience. Both are cheap (transform/opacity only) and the marquee pauses off-screen. */
