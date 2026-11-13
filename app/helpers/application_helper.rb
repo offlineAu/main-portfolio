@@ -136,6 +136,6 @@ module ApplicationHelper
   end
 
   def project_color(project)
-    { "sentisphere" => "sage", "veloce" => "lilac", "e-lista" => "apricot", "loom" => "rose", "syntax-sip" => "coffee", "issuance-subsystem" => "blue" }.fetch(project.slug, "apricot")
+    { "sentisphere" => "sage", "veloce" => "lilac", "e-lista" => "apricot", "loom" => "rose", "syntax-sip" => "coffee", "issuance-subsystem" => "blue", "jandi-moviehub" => "lilac" }.fetch(project.slug, "apricot")
   end
 end
