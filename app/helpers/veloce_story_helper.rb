@@ -4,42 +4,42 @@
 module VeloceStoryHelper
   VELOCE_STORY = [
     { id: "first-impression", title: "The first impression", steps: [
-      { image: "01-landing-page", ratio: "16 / 10", heading: "Your idea shouldn’t stay an idea.",
-        body: "The landing page opens with one promise, custom software and web development, and two clear next steps: start a conversation or see what gets built.",
-        alt: "Veloce landing page: a dark hero reading “Your idea shouldn’t stay an idea” with buttons to start a conversation or see what Veloce builds" },
-      { image: "02-diagonal-carousel", ratio: "16 / 10", heading: "Finished work, before the first message.",
-        body: "A diagonal carousel of sample websites, including a homeware online store, shows what “built the way we’d build yours” looks like.",
-        alt: "A carousel of sample websites tilted on a diagonal, with a homeware online store in focus" }
+      { image: "01-hero", ratio: "16 / 10", heading: "Websites that work for your business.",
+        body: "The homepage leads with one promise and one next step, requesting a meeting. Beside it, a sample build plays on a laptop and phone, switchable between a website, an online store and a business system.",
+        alt: "Veloce homepage reading “Websites that work for your business” beside a laptop and phone showing a sample advisory-firm site, with Website, Online store and Business system toggles" },
+      { image: "02-workarounds", ratio: "16 / 10", heading: "Start from the problem.",
+        body: "“Most businesses run on workarounds”: booking requests scattered across messages, approvals tracked in spreadsheets and email, a website that hasn’t kept up. A dark panel answers each one with a single working system.",
+        alt: "A section titled “Most businesses run on workarounds” listing three problems, next to a dark panel reading “We turn them into one working system”" },
+      { image: "03-examples", ratio: "16 / 10", heading: "Picture it working.",
+        body: "A carousel of seven sample websites, stores and business tools. Each one can be opened as a live preview or used as the starting design in the builder.",
+        alt: "The “Picture it working” carousel on sample 1 of 7, an advisory-firm website, with buttons to view a live preview or start from this design" }
     ] },
     { id: "explore-services", title: "Explore the services", steps: [
-      { image: "03-service-book-cover", ratio: "4 / 3", heading: "Services as a book you open.",
-        body: "Instead of a bulleted list, the services sit in a closed green book titled “Explore every service,” with a contents list beside it.",
-        alt: "A closed green service book titled “Explore every service” next to a contents list of services" },
-      { image: "04-service-book-open", ratio: "4 / 3", heading: "Every page answers one need.",
-        body: "Open it and each spread covers one service, such as business websites, with a way to ask about it. The contents groups them by reaching customers, running the day, and improving what already exists.",
-        alt: "The service book open to a Business websites page, with the contents list on the left" }
+      { image: "04-services", ratio: "16 / 10", heading: "Choose what needs to change first.",
+        body: "Services are grouped by need, reaching customers or running the day-to-day, in a contents list beside an open service book. Each page answers one need and ends with “Ask about this.”",
+        alt: "A section titled “Choose what needs to change first” with a grouped services list beside an open book on its Business websites page" },
+      { image: "05-service-page", ratio: "16 / 10", heading: "A page for every service.",
+        body: "Each service gets its own page, like business websites: what it does for a customer, in plain language, and a direct way to discuss the project.",
+        alt: "The Business websites service page with the headline “A business website that helps customers take the next step” and a Discuss your project button" }
     ] },
     { id: "design-it-yourself", title: "Design it yourself", steps: [
-      { image: "05-website-builder", ratio: "16 / 10", heading: "A builder that runs in the browser.",
-        body: "Visitors can sketch their own site: a block list on the left, a live canvas in the middle, and theme, color, and font controls on the right.",
-        alt: "The Veloce website builder showing a tattoo studio template on the canvas with block and theme panels" },
-      { image: "06-template-library", ratio: "16 / 10", heading: "Start from a template.",
-        body: "A “Choose a starting point” library offers templates for a tattoo studio, an advisory firm, an executive dashboard, and a client portal.",
-        alt: "The template library dialog listing a tattoo studio, advisory firm, executive dashboard, and client portal template" },
-      { image: "09-builder-guide", ratio: "16 / 10", heading: "Four steps to a draft.",
-        body: "“Design it yourself. We build it for real.” Pick a template, drag blocks, make it yours, and send it over. The draft stays in the visitor’s own browser until they choose to send it.",
-        alt: "A guide titled “Design it yourself. We build it for real” with four steps from picking a template to sending it" }
+      { image: "07-offer", ratio: "16 / 10", heading: "Design it yourself. We build it for real.",
+        body: "Four steps: pick a template, drag in blocks, make it yours, and send it over for a reply with questions, a scope and an estimate. No account needed, and the draft stays in the visitor’s browser until they send it.",
+        alt: "A section titled “Design it yourself. We build it for real” with four numbered steps and template shortcuts for business, restaurant, portfolio, product and shop" },
+      { image: "08-builder", ratio: "16 / 10", heading: "Start from a real design.",
+        body: "The builder opens on “Choose a starting point,” a library of designer templates such as an advisory firm site and an executive dashboard, with the block and style panels waiting behind it.",
+        alt: "The Veloce builder with a “Choose a starting point” dialog showing designer templates for an advisory firm and an executive dashboard" }
     ] },
     { id: "how-it-works", title: "How it works", steps: [
-      { image: "07-interactive-workflow", ratio: "4 / 3", heading: "Try the process, not just read about it.",
-        body: "“Build what matters” walks through think, build, and make it work, with an interactive example of a booking request moving from scattered messages to one place.",
-        alt: "An interactive workflow panel titled “Try the process” with a customer booking example" },
-      { image: "08-capabilities", ratio: "16 / 10", heading: "The functionality a business needs.",
-        body: "Capabilities are grouped for customers, for the team, and for commerce and data, with illustrative examples like booking, contact forms, customer portals, and sign-in.",
-        alt: "A capabilities section with a booking calendar and cards for contact forms, booking systems, customer portals, and authentication" },
-      { image: "10-about-page", ratio: "16 / 10", heading: "Built in the Philippines, around your business.",
-        body: "The story closes on the About page: a software team that builds websites, web applications, and custom systems for businesses that want working software.",
-        alt: "The Veloce About page with a dark panel reading “Built in the Philippines. Built around your business.”" }
+      { image: "06-approach", ratio: "16 / 10", heading: "Try the process, not just read about it.",
+        body: "“Then we build it with you” moves through think it, build it, make it work. An example workflow lets visitors pick a problem, like scattered customer bookings, and decide what the first version should do.",
+        alt: "The approach section with Think it, Build it and Make it work tabs, and an interactive “Try the process” panel for a customer bookings example" },
+      { image: "09-get-in-touch", ratio: "16 / 10", heading: "Your idea shouldn’t stay an idea.",
+        body: "The page closes with one invitation: describe what you want to build, improve or solve, then request a meeting or a consultation.",
+        alt: "A dark contact panel reading “Your idea shouldn’t stay an idea” with buttons to request a meeting or a consultation" },
+      { image: "10-about", ratio: "16 / 10", heading: "Philippine roots. Practical thinking.",
+        body: "The About page introduces independent development based in the Philippines and working remotely, building websites and systems around each business.",
+        alt: "The Veloce About page headlined “Philippine roots. Practical thinking.” beside a photo of limestone cliffs in El Nido, Palawan" }
     ] }
   ].freeze
 
