@@ -1,4 +1,6 @@
 class ProjectsController < ApplicationController
+  after_action :cache_public_page
+
   def index
     # One load, then filtered in Ruby: each query is a network round trip to the database.
     published = Project.published.ordered.includes(:cover_attachment).to_a

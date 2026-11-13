@@ -128,36 +128,49 @@
       return Math.hypot(dx, dy);
     }
 
-    // The flame catches over the face in the hero portrait underneath (the middle of the screen elsewhere).
-    ignite() {
-      // Never uncover the landing page before its essential assets are ready.
-      if (!createPaperBurn || !landingLoaded) return;
+    // Refresh the ignition point and label distances when the responsive layout changes.
+    burnGeometry() {
       const portrait = document.querySelector(".hero-portrait")?.getBoundingClientRect();
       this.origin = portrait?.width
         ? { x: portrait.left + portrait.width / 2, y: Math.min(innerHeight * 0.7, portrait.top + portrait.height * 0.22) }
         : { x: innerWidth / 2, y: innerHeight * 0.45 };
       // Only the top labels can catch; the counter row is kept out of reach (see loadingBurn) and exits at 100.
       this.masks = [...this.element.querySelectorAll(".preloader-row:not(.preloader-row-bottom) .preloader-mask")]
-        .map((mask) => ({ mask, reach: this.reach(mask) }));
+        .map((mask) => ({ mask, reach: this.reach(mask), burnt: mask.classList.contains("is-burnt") }));
+      return this.origin;
+    }
+
+    // The flame catches over the face in the hero portrait underneath (the middle of the screen elsewhere).
+    ignite() {
+      // Never uncover the landing page before its essential assets are ready.
+      if (!createPaperBurn || !landingLoaded) return;
+      // High Contrast (forced colors) overrides the sheet's colors and leaves the burn see-through; use the wipe.
+      if (matchMedia("(forced-colors: active)").matches) {
+        this.burner = null;
+        return;
+      }
       try {
         this.burner = createPaperBurn({
           host: this.element,
           finishFrom: LOADING_BURN,
-          origin: this.origin,
+          origin: () => this.burnGeometry(),
           paint: (context, width, height, scale) => this.paint(context, scale),
           onIgnite: () => this.element.classList.add("is-burning"),
           onReveal: () => this.reveal(),
           onFrame: (radius) => this.scorch(radius),
           onFallback: () => this.fallback(),
+          onResize: (speed) => this.setLoadingBurn(speed),
         });
       } catch {
         this.burner = null;
       }
-      if (!this.burner) return;
+    }
+
+    setLoadingBurn(speed) {
       // While counting, the hole grows around the portrait but stops short of the counter and the "Loading" line,
       // so they stay on intact paper until the finale.
       const bottom = Math.min(...Array.from(this.element.querySelectorAll(".preloader-row-bottom .preloader-mask"), (mask) => this.reach(mask)));
-      this.loadingBurn = Math.min(LOADING_BURN, Math.max(0.1, (bottom / innerHeight - 0.06) / this.burner.speed));
+      this.loadingBurn = Math.min(LOADING_BURN, Math.max(0.1, (bottom / innerHeight - 0.06) / speed));
     }
 
     // Any label a flame tongue reaches chars and crumbles instead of floating over the hole.

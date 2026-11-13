@@ -1,4 +1,6 @@
 class PortfolioController < ApplicationController
+  after_action :cache_public_page
+
   def overview
     # One load, then filtered in Ruby: each query is a network round trip to the database.
     # Cards only need the attachment id to sign the media URL, not the blob or its variants.

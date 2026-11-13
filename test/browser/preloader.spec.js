@@ -272,3 +272,18 @@ test("navigating home waits for that visit's portrait before playing the entranc
   await expect.poll(() => page.locator(".hero-char").first().evaluate(element => element.getAnimations().length)).toBeGreaterThan(0);
   expect(await page.locator(".hero-portrait").evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
 });
+
+test("Windows High Contrast skips the burn and uses an opaque wipe", async ({ browser }) => {
+  const context = await browser.newContext({ forcedColors: "active", viewport: { width: 1366, height: 768 } });
+  const page = await context.newPage();
+  await observeLifecycle(page);
+  await allowSoftwareWebGL(page);
+  await page.goto("http://127.0.0.1:3101/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".preloader")).toBeVisible();
+  await expect(page.locator('[data-preloader-target="count"]')).not.toHaveAttribute("data-value", "0");
+  await expect(page.locator(".preloader")).not.toHaveClass(/is-burning/);
+  await expect(page.locator("canvas.paper-burn")).toHaveCount(0);
+  await expect(page.locator(".preloader")).toHaveClass(/is-wiping/, { timeout: 4000 });
+  await expectCompleted(page);
+  await context.close();
+});

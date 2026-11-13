@@ -1,6 +1,7 @@
 require "test_helper"
 
 class PortfolioTest < ActionDispatch::IntegrationTest
+  include OwnerSignIn
   test "public pages render real content and metadata" do
     [root_path, projects_path, about_path, experience_path, contact_path].each do |path|
       get path
@@ -78,5 +79,38 @@ class PortfolioTest < ActionDispatch::IntegrationTest
       assert_nil response.headers["Set-Cookie"]
     end
     assert_includes response.body, project_path(Project.published.first)
+  end
+
+  test "public pages can be served by the CDN without a session cookie" do
+    [root_path, projects_path, about_path, experience_path, contact_path, project_path(Project.published.first)].each do |path|
+      get path
+      assert_response :success
+      assert_equal ApplicationController::PUBLIC_PAGE_CDN_CACHE, response.headers["CDN-Cache-Control"], path
+      assert_nil response.headers["Set-Cookie"], path
+      assert_select "meta[name='csrf-token']", count: 0
+    end
+    get "/projects/does-not-exist"
+    assert_nil response.headers["CDN-Cache-Control"]
+  end
+
+  test "published media is cacheable by the CDN and drafts are not" do
+    project = Project.published.first
+    project.gallery.attach(io: StringIO.new(Vips::Image.black(40, 40).write_to_buffer(".png")), filename: "a.png", content_type: "image/png")
+    path = portfolio_media_path(MediaToken.sign(project.gallery.attachments.last))
+    get path
+    assert_response :success
+    assert_equal %w[immutable max-age=31536000 public], response.headers["Cache-Control"].split(", ").sort
+    assert_equal "public, max-age=31536000, immutable", response.headers["CDN-Cache-Control"]
+    assert_equal "same-origin", response.headers["Cross-Origin-Resource-Policy"]
+
+    @owner = create_owner
+    sign_in
+    project.update!(published: false)
+    get path
+    assert_response :success
+    assert_equal "private, no-store", response.headers["Cache-Control"]
+    assert_nil response.headers["CDN-Cache-Control"]
+    get about_path
+    assert_nil response.headers["CDN-Cache-Control"], "owner requests must never be shared"
   end
 end

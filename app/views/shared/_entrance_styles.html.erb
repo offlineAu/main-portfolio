@@ -29,7 +29,11 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(20px, 3vw, 40px) var(--gutter) clamp(28px, 4vw, 52px);
+  padding:
+    max(clamp(20px, 3vw, 40px), env(safe-area-inset-top, 0px))
+    max(var(--gutter), env(safe-area-inset-right, 0px))
+    max(clamp(28px, 4vw, 52px), env(safe-area-inset-bottom, 0px))
+    max(var(--gutter), env(safe-area-inset-left, 0px));
   background: var(--canvas);
   color: var(--ink);
   overflow: hidden;
@@ -106,7 +110,7 @@
 .preloader-count {
   display: flex;
   align-items: flex-start;
-  font-size: clamp(112px, 24vw, 360px);
+  font-size: clamp(112px, min(24vw, 48svh), 360px);
   font-weight: 200;
   line-height: 1;
   letter-spacing: -0.06em;

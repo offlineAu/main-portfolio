@@ -235,11 +235,18 @@ function createParticles(canvas, scale) {
 // The caller drives the burn: set(value) while loading (0–1, eased toward so jumps stay smooth), then
 // finish(ms) burns off whatever is left and resolves once the last embers have mostly drifted away.
 // onFrame(radius) reports how far (CSS px) the first flame has spread from the origin, ignoring the noise.
-function createPaperBurn({ host, paint, origin, finishFrom = 0.55, onIgnite, onReveal, onFrame, onFallback }) {
-  // Keep shader work bounded even on large Windows displays with scaling enabled.
-  const scale = Math.min(devicePixelRatio || 1, 1.5, Math.sqrt(1_000_000 / (innerWidth * innerHeight)));
-  const width = Math.max(1, Math.floor(innerWidth * scale));
-  const height = Math.max(1, Math.floor(innerHeight * scale));
+function createPaperBurn({ host, paint, origin, finishFrom = 0.55, onIgnite, onReveal, onFrame, onFallback, onResize }) {
+  // Touch devices and small CPUs keep the same burn at a lower rendering resolution.
+  const pixelBudget = matchMedia("(pointer: coarse)").matches || navigator.hardwareConcurrency <= 4 || navigator.deviceMemory <= 4
+    ? 400_000 : 1_000_000;
+  const measure = () => {
+    const bounds = host.getBoundingClientRect();
+    const cssWidth = Math.max(1, bounds.width);
+    const cssHeight = Math.max(1, bounds.height);
+    const scale = Math.min(devicePixelRatio || 1, 1.5, Math.sqrt(pixelBudget / (cssWidth * cssHeight)));
+    return { cssWidth, cssHeight, scale, width: Math.max(1, Math.floor(cssWidth * scale)), height: Math.max(1, Math.floor(cssHeight * scale)) };
+  };
+  let { cssWidth, cssHeight, scale, width, height } = measure();
   const make = (className) => Object.assign(document.createElement("canvas"), { className, width, height });
   const surface = make("paper-burn");
   let renderer;
@@ -255,25 +262,36 @@ function createPaperBurn({ host, paint, origin, finishFrom = 0.55, onIgnite, onR
   }
   const sparksCanvas = make("paper-burn paper-burn-sparks");
   host.append(surface, sparksCanvas);
-  const particles = createParticles(sparksCanvas, scale);
+  let particles;
   const { gl, uniforms } = renderer;
 
   // The first flame catches at the origin; two more join near opposite corners only for the final burn-off,
   // so the labels and counter stay on intact paper while loading. Coordinates are uv (y up) plus a start delay.
-  const first = origin ? [origin.x / innerWidth, 1 - origin.y / innerHeight, 0] : [random(0.05, 0.3), random(0.02, 0.25), 0];
-  const ignite = [
-    first,
+  const corners = [
     [random(0.02, 0.18), random(0.02, 0.2), finishFrom + 0.02],
     [random(0.82, 0.98), random(0.8, 0.98), finishFrom + 0.08],
   ];
-  const aspect = width / height;
-  // Fast enough that every corner is consumed (past the noise and char band) exactly as burn reaches 1.
-  const speed = Math.max(...[[0, 0], [1, 0], [0, 1], [1, 1]].map(([cx, cy]) => Math.min(...ignite.map(([x, y, delay]) =>
-    (Math.hypot((cx - x) * aspect, cy - y) + 0.3) / (1 - delay)))));
-  gl.viewport(0, 0, width, height);
-  gl.uniform2f(uniforms.resolution, width, height);
-  gl.uniform1f(uniforms.speed, speed);
-  gl.uniform3fv(uniforms.ignite, ignite.flat());
+  let ignite;
+  let speed;
+  const layout = () => {
+    ({ cssWidth, cssHeight, scale, width, height } = measure());
+    surface.width = sparksCanvas.width = width;
+    surface.height = sparksCanvas.height = height;
+    particles = createParticles(sparksCanvas, scale);
+    const point = typeof origin === "function" ? origin() : origin;
+    const first = point ? [Math.max(0, Math.min(1, point.x / cssWidth)), 1 - Math.max(0, Math.min(1, point.y / cssHeight)), 0] : [0.5, 0.55, 0];
+    ignite = [first, ...corners];
+    const aspect = width / height;
+    // Recalculate the flame's reach after rotation so every corner is still consumed.
+    speed = Math.max(...[[0, 0], [1, 0], [0, 1], [1, 1]].map(([cx, cy]) => Math.min(...ignite.map(([x, y, delay]) =>
+      (Math.hypot((cx - x) * aspect, cy - y) + 0.3) / (1 - delay)))));
+    gl.viewport(0, 0, width, height);
+    gl.uniform2f(uniforms.resolution, width, height);
+    gl.uniform1f(uniforms.speed, speed);
+    gl.uniform3fv(uniforms.ignite, ignite.flat());
+    onResize?.(speed);
+  };
+  layout();
 
   const started = performance.now();
   let last = started;
@@ -284,12 +302,15 @@ function createPaperBurn({ host, paint, origin, finishFrom = 0.55, onIgnite, onR
   let stopped = false;
   let frameId;
   let slowFrames = 0;
+  let performanceGraceUntil = started + 400;
 
   const stop = () => {
     if (stopped) return;
     stopped = true;
     cancelAnimationFrame(frameId);
     surface.removeEventListener("webglcontextlost", fallback);
+    removeEventListener("resize", resize);
+    window.visualViewport?.removeEventListener("resize", resize);
     ending?.resolve(false);
     if (!gl.isContextLost()) {
       gl.deleteTexture(renderer.texture);
@@ -305,6 +326,22 @@ function createPaperBurn({ host, paint, origin, finishFrom = 0.55, onIgnite, onR
     stop();
     onFallback?.();
   };
+  const resize = () => {
+    if (stopped) return;
+    try {
+      layout();
+      // Reallocating the drawing buffers can briefly stall a mobile GPU during rotation.
+      // Give the resized renderer time to settle before judging its sustained frame rate.
+      last = performance.now();
+      slowFrames = 0;
+      performanceGraceUntil = last + 600;
+      // Resizing clears the drawing buffer. Restore the current burn before the next paint.
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    } catch { fallback(); }
+  };
+  addEventListener("resize", resize, { passive: true });
+  window.visualViewport?.addEventListener("resize", resize, { passive: true });
   surface.addEventListener("webglcontextlost", fallback);
 
   const frame = (now) => {
@@ -312,7 +349,7 @@ function createPaperBurn({ host, paint, origin, finishFrom = 0.55, onIgnite, onR
     if (gl.isContextLost()) return fallback();
     const elapsed = (now - started) / 1000;
     // Repeated frames below 20 FPS make the wipe a better experience. Allow startup to settle.
-    if (now - started > 400) {
+    if (now > performanceGraceUntil) {
       slowFrames = now - last > 50 ? slowFrames + 1 : 0;
       if (slowFrames >= 4) return fallback();
     }
@@ -334,7 +371,7 @@ function createPaperBurn({ host, paint, origin, finishFrom = 0.55, onIgnite, onR
       revealed = true;
       onReveal?.();
     }
-    onFrame?.(burn * speed * innerHeight);
+    onFrame?.(burn * speed * cssHeight);
     if (burn < 1) particles.spawn(ignite.map(([x, y, delay]) => ({ x, y, radius: (burn - delay) * speed })), dt);
     const alive = particles.draw(dt, elapsed);
     // Let the last embers drift briefly, but never hold the page past a short tail.
@@ -355,7 +392,7 @@ function createPaperBurn({ host, paint, origin, finishFrom = 0.55, onIgnite, onR
 
   return {
     // Spread per unit of burn, in viewport heights: lets the caller turn a distance into a burn value.
-    speed,
+    get speed() { return speed; },
     set(value) {
       target = Math.max(target, Math.min(finishFrom, value));
     },

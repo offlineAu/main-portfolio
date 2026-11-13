@@ -67,7 +67,13 @@ runtime, so it needs no separate download on a first visit. A portrait that fini
 after the counter reaches 99% still starts the burn before exiting. An animated
 wipe takes over when WebGL is unavailable or too slow. OS animation settings and blocked storage do not skip the entrance.
 Lower-end devices use opacity and transforms for the hero instead of blur and
-continuous pointer movement. The preloader still runs once per tab session when
+continuous pointer movement. The burn uses at most 400,000 pixels on touch devices
+and small CPUs, or 1,000,000 on other displays. Rotation and browser viewport
+changes resize the active burn and update its ignition point without restarting
+the entrance. Loader spacing respects safe areas, and short landscape layouts
+keep the portrait's face in view. Responsive browser checks cover fresh, slow
+visits from 320px phones through 1920px desktops, plus rotation during the burn.
+The preloader still runs once per tab session when
 storage is available; JavaScript-free visits retain readable content.
 
 ```sh
