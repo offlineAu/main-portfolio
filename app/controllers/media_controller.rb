@@ -20,9 +20,16 @@ class MediaController < ApplicationController
     key = [attachment.id, attachment.blob_id, ActiveSupport::Digest.hexdigest(options.inspect)].join("/")
     image = PROCESSED.fetch(key) { attachment.blob.variant(options).processed.download }
     # The signed URL is derived from the attachment id, so a replaced image gets a new URL:
-    # published media can be cached for good. Drafts must never be stored.
+    # published media can be cached for good, by browsers and by the Vercel CDN, so repeat views
+    # never reach the container or re-run the image processing. Drafts must never be stored.
+    # Cached copies keep Cross-Origin-Resource-Policy, so browsers still refuse embeds on other sites.
     draft = record.is_a?(Project) && !record.published?
-    response.headers["Cache-Control"] = draft ? "private, no-store" : "private, max-age=31536000, immutable"
+    if draft
+      response.headers["Cache-Control"] = "private, no-store"
+    else
+      response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+      response.headers["CDN-Cache-Control"] = "public, max-age=31536000, immutable"
+    end
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
     send_data image, type: "image/webp", disposition: "inline"

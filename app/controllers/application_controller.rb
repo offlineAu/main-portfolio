@@ -38,4 +38,16 @@ class ApplicationController < ActionController::Base
   def load_profile
     @profile = Profile.current
   end
+
+  # Public pages are the same for every visitor, so the Vercel CDN may serve them briefly instead of
+  # rendering each view in the container. Browsers still revalidate. The window stays short because a
+  # cached page also repeats its CSP nonce. Requests with an owner cookie are never shared: cookies are
+  # written after this runs, and a stale one is deleted (Set-Cookie) by resume_session.
+  PUBLIC_PAGE_CDN_CACHE = "public, max-age=60, stale-while-revalidate=600"
+
+  def cache_public_page
+    return if cookies[:session_id].present? || !response.successful?
+
+    response.headers["CDN-Cache-Control"] = PUBLIC_PAGE_CDN_CACHE
+  end
 end

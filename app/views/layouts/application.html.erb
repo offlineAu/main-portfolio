@@ -12,7 +12,7 @@
     <meta property="og:url" content="<%= ENV.fetch('APP_URL', request.base_url).chomp('/') + request.path %>">
     <meta property="og:image" content="<%= ENV.fetch('APP_URL', request.base_url).chomp('/') %>/social-card.png">
     <%= tag.meta name: 'robots', content: 'noindex, nofollow' if @preview %>
-    <%= csrf_meta_tags %>
+    <%# No csrf_meta_tags: public pages only submit GET forms, and the token would write a session cookie that stops the CDN caching the page. %>
     <%= csp_meta_tag %>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <% %w[base site].each do |stylesheet| %>
