@@ -144,6 +144,11 @@
     ignite() {
       // Never uncover the landing page before its essential assets are ready.
       if (!createPaperBurn || !landingLoaded) return;
+      // High Contrast (forced colors) overrides the sheet's colors and leaves the burn see-through; use the wipe.
+      if (matchMedia("(forced-colors: active)").matches) {
+        this.burner = null;
+        return;
+      }
       try {
         this.burner = createPaperBurn({
           host: this.element,
